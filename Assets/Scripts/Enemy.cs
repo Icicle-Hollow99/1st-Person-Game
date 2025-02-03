@@ -39,8 +39,21 @@ public class EnemyBehavior : MonoBehaviour
         }
     }
 
-    // This method will be called when the katana hits the enemy
+    // This method will be called when the katana or gun hits the enemy
     public void TakeHit()
+    {
+        hitCount++;
+
+        // If the enemy has been hit the max number of times, destroy the enemy
+        if (hitCount >= maxHits)
+        {
+            Debug.Log("Enemy has been defeated!");
+            Destroy(gameObject); // Destroy the enemy GameObject
+        }
+    }
+
+    // Method to handle taking damage from the gun
+    public void TakeDamage(float damage)
     {
         hitCount++;
 

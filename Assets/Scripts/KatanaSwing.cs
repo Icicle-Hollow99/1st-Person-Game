@@ -5,13 +5,14 @@ public class KatanaSwing : MonoBehaviour
 {
     public float swingSpeed = 15f; // Speed of the swing
     private bool isSwinging = false;
+    private bool swingForward = true; // Track swing direction
     private Vector3 initialPosition; // Original position
     private Quaternion initialRotation; // Original rotation
     private Vector3 targetPosition; // Target position for the swing
     private Quaternion targetRotation; // Target rotation for the swing
 
     // Reference to the katana collider
-    public Collider katanaCollider; 
+    public Collider katanaCollider;
 
     void Start()
     {
@@ -21,6 +22,9 @@ public class KatanaSwing : MonoBehaviour
         {
             katanaCollider = GetComponent<Collider>(); // Ensure we have a collider reference
         }
+
+        // Set the target rotation for swinging
+        targetRotation = initialRotation * Quaternion.Euler(new Vector3(0, 0, 90f)); // Example swing angle
     }
 
     void Update()
@@ -35,40 +39,23 @@ public class KatanaSwing : MonoBehaviour
     {
         isSwinging = true;
 
-        // Generate random target position and rotation for the swing
-        targetPosition = initialPosition + new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
-        targetRotation = initialRotation * Quaternion.Euler(Random.Range(-30f, 30f), Random.Range(-30f, 30f), 0);
-
         float elapsedTime = 0f;
         float duration = 1f / swingSpeed;
+
+        Quaternion startRotation = swingForward ? initialRotation : targetRotation;
+        Quaternion endRotation = swingForward ? targetRotation : initialRotation;
 
         // Swing to target position and rotation
         while (elapsedTime < duration)
         {
             float t = elapsedTime / duration;
-            transform.localPosition = Vector3.Lerp(initialPosition, targetPosition, t);
-            transform.localRotation = Quaternion.Lerp(initialRotation, targetRotation, t);
+            transform.localRotation = Quaternion.Lerp(startRotation, endRotation, t);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-        transform.localPosition = targetPosition; // Ensure exact position
-        transform.localRotation = targetRotation; // Ensure exact rotation
+        transform.localRotation = endRotation; // Ensure exact rotation
 
-        yield return new WaitForSeconds(0.1f); // **Pause at full swing**
-
-        // Return to original position and rotation
-        elapsedTime = 0f;
-        while (elapsedTime < duration)
-        {
-            float t = elapsedTime / duration;
-            transform.localPosition = Vector3.Lerp(targetPosition, initialPosition, t);
-            transform.localRotation = Quaternion.Lerp(targetRotation, initialRotation, t);
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
-        transform.localPosition = initialPosition; // Ensure exact position
-        transform.localRotation = initialRotation; // Ensure exact rotation
-
+        swingForward = !swingForward; // Toggle swing direction
         isSwinging = false;
     }
 

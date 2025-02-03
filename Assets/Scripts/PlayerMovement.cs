@@ -25,6 +25,10 @@ public class PlayerMovement : MonoBehaviour
     public float maxHealth = 100f; // Maximum health
     private float currentHealth;   // Current health
 
+    // Weapon switching variables
+    public GameObject katana; // Reference to the katana GameObject
+    public GameObject gun; // Reference to the gun GameObject
+
     void Start()
     {
         rb = GetComponent<Rigidbody>(); // Get the Rigidbody component
@@ -39,6 +43,10 @@ public class PlayerMovement : MonoBehaviour
 
         // Initialize health
         currentHealth = maxHealth;
+
+        // Ensure the katana is active and the gun is hidden at the start
+        katana.SetActive(true);
+        gun.SetActive(false);
     }
 
     void Update()
@@ -69,6 +77,30 @@ public class PlayerMovement : MonoBehaviour
         // Rotate the camera up/down (around X-axis)
         rotationX -= mouseY;
         playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+
+        // Weapon switching logic
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            SwitchToKatana();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            SwitchToGun();
+        }
+    }
+
+    private void SwitchToKatana()
+    {
+        katana.SetActive(true);
+        gun.SetActive(false);
+        Debug.Log("Switched to katana");
+    }
+
+    private void SwitchToGun()
+    {
+        katana.SetActive(false);
+        gun.SetActive(true);
+        Debug.Log("Switched to gun");
     }
 
     private void OnCollisionStay(Collision other)
@@ -101,14 +133,14 @@ public class PlayerMovement : MonoBehaviour
 
     // Method to handle death (restart the scene)
     private void Die()
-{
-    Debug.Log("Player has died! Restarting scene...");
-    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); // Restart scene
-}
+    {
+        Debug.Log("Player has died! Restarting scene...");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); // Restart scene
+    }
 
     // Method to heal the player (optional)
     public void Heal(float healAmount)
     {
         currentHealth = Mathf.Min(currentHealth + healAmount, maxHealth); // Ensure health doesn't exceed max
     }
-} 
+}
