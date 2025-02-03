@@ -1,0 +1,26 @@
+# Ignore Unity temp files and directories
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]eleases/
+[Bb]uild/
+[Bb]uilds/
+[Bb]in/
+[Oo]bj/
+Temp/
+[Ll]ibrary/
+[Ll]ogs/
+[Mm]emoryCaptures/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.VC.db
+*.pidb.meta
+*.unitypackage
