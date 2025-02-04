@@ -1,146 +1,140 @@
 using UnityEngine;
-using UnityEngine.SceneManagement; // Required for scene management
+using UnityEngine.SceneManagement;
+using TMPro;
 
 public class PlayerMovement : MonoBehaviour
 {
     public float speed = 5f;
-    public float sprintSpeed = 8f; // Sprint speed when Shift is held
-    public float jumpForce = 5f; // Jump force
-    private bool isGrounded; // To check if the player is on the ground
+    public float sprintSpeed = 8f;
+    public float jumpForce = 5f;
+    private bool isGrounded;
     private Rigidbody rb;
 
-    // Mouse look sensitivity
     public float lookSpeedX = 2f;
     public float lookSpeedY = 2f;
-    private float rotationX = 0f; // Store the vertical rotation
+    private float rotationX = 0f;
 
-    private bool isSprinting = false; // Track if player is sprinting
-
-    // Assign this in the inspector
-    public Texture2D dotCursor;  // The tiny dot texture
+    public Texture2D dotCursor;
 
     private Camera playerCamera;
 
-    // Health variables
-    public float maxHealth = 100f; // Maximum health
-    private float currentHealth;   // Current health
+    public float maxHealth = 100f;
+    private float currentHealth;
 
-    // Weapon switching variables
-    public GameObject katana; // Reference to the katana GameObject
-    public GameObject gun; // Reference to the gun GameObject
+    // Weapon management
+    public GameObject katana;
+    public GameObject glockG22;
+    private int selectedWeaponIndex = 0;
+    private WeaponUIManager weaponUIManager;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>(); // Get the Rigidbody component
-        playerCamera = Camera.main; // Reference to the main camera
+        rb = GetComponent<Rigidbody>();
+        playerCamera = Camera.main;
+        Cursor.SetCursor(dotCursor, Vector2.zero, CursorMode.Auto);
 
-        // Lock the cursor and hide it from the screen
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = true;  // Make sure the cursor is visible (crosshair should show)
-        
-        // Set the custom crosshair texture
-        Cursor.SetCursor(dotCursor, Vector2.zero, CursorMode.ForceSoftware);
-
-        // Initialize health
+        weaponUIManager = Object.FindFirstObjectByType<WeaponUIManager>();
         currentHealth = maxHealth;
+        UpdateWeaponUI();
 
-        // Ensure the katana is active and the gun is hidden at the start
-        katana.SetActive(true);
-        gun.SetActive(false);
+        // Lock the cursor
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void Update()
     {
-        // Check for Sprinting (holding Shift)
-        isSprinting = Input.GetKey(KeyCode.LeftShift);
+        HandleMovement();
+        HandleWeaponSwap();
 
-        // Player movement (depending on Sprinting)
-        float moveX = Input.GetAxis("Horizontal");
-        float moveZ = Input.GetAxis("Vertical");
-        float currentSpeed = isSprinting ? sprintSpeed : speed; // Use sprintSpeed if Shift is held
-        Vector3 move = new Vector3(moveX, 0, moveZ) * currentSpeed * Time.deltaTime;
-        transform.Translate(move);
-
-        // Jumping logic
-        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+        // Unlock the cursor when the Escape key is pressed
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse); // Apply a force upward
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    void HandleMovement()
+    {
+        float moveHorizontal = Input.GetAxis("Horizontal");
+        float moveVertical = Input.GetAxis("Vertical");
+
+        Vector3 movement = new Vector3(moveHorizontal, 0.0f, moveVertical);
+        movement = transform.TransformDirection(movement);
+
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            rb.linearVelocity = movement * sprintSpeed;
+        }
+        else
+        {
+            rb.linearVelocity = movement * speed;
         }
 
-        // Mouse look (horizontal and vertical)
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+
         float mouseX = Input.GetAxis("Mouse X") * lookSpeedX;
         float mouseY = Input.GetAxis("Mouse Y") * lookSpeedY;
 
-        // Rotate the player left/right (around Y-axis)
-        transform.Rotate(0, mouseX, 0);
-
-        // Rotate the camera up/down (around X-axis)
         rotationX -= mouseY;
-        playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+        rotationX = Mathf.Clamp(rotationX, -90f, 90f);
 
-        // Weapon switching logic
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            SwitchToKatana();
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            SwitchToGun();
-        }
+        playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
+        transform.Rotate(Vector3.up * mouseX);
     }
 
-    private void SwitchToKatana()
+    void HandleWeaponSwap()
     {
-        katana.SetActive(true);
-        gun.SetActive(false);
-        Debug.Log("Switched to katana");
+        if (Input.GetKeyDown(KeyCode.Alpha1)) SelectWeapon(0);
+        if (Input.GetKeyDown(KeyCode.Alpha2)) SelectWeapon(1);
     }
 
-    private void SwitchToGun()
+    void SelectWeapon(int index)
     {
-        katana.SetActive(false);
-        gun.SetActive(true);
-        Debug.Log("Switched to gun");
+        selectedWeaponIndex = index;
+        katana.SetActive(index == 0);
+        glockG22.SetActive(index == 1);
+        UpdateWeaponUI();
     }
 
-    private void OnCollisionStay(Collision other)
+    void UpdateWeaponUI()
     {
-        // Check if the player is touching the ground
-        if (other.gameObject.CompareTag("Ground"))
+        string[] weaponNames = { "Katana", "Glock G22" };
+        weaponUIManager.UpdateWeaponUI(selectedWeaponIndex, weaponNames);
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
         }
     }
 
-    private void OnCollisionExit(Collision other)
+    void OnCollisionExit(Collision collision)
     {
-        // Set isGrounded to false when not touching the ground
-        if (other.gameObject.CompareTag("Ground"))
+        if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = false;
         }
     }
 
-    // Method to handle taking damage
-    public void TakeDamage(float damageAmount)
+    public void TakeDamage(float damage)
     {
-        currentHealth -= damageAmount;
+        currentHealth -= damage;
         if (currentHealth <= 0)
         {
             Die();
         }
     }
 
-    // Method to handle death (restart the scene)
-    private void Die()
+    void Die()
     {
-        Debug.Log("Player has died! Restarting scene...");
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); // Restart scene
-    }
-
-    // Method to heal the player (optional)
-    public void Heal(float healAmount)
-    {
-        currentHealth = Mathf.Min(currentHealth + healAmount, maxHealth); // Ensure health doesn't exceed max
+        // Handle player death (e.g., reload scene, show game over screen)
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

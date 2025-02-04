@@ -1,8 +1,24 @@
-# Normalize line endings
-* text=auto
-*.cs text eol=lf
-*.shader text eol=lf
-*.meta text eol=lf
-*.json text eol=lf
-*.yaml text eol=lf
-*.txt text eol=lf
+# Normalize text files to use LF line endings
+* text eol=lf
+
+# Explicitly define text files
+*.cs     text diff=csharp
+*.js     text
+*.shader text
+*.cginc  text
+
+# Binary files
+*.dll    binary
+*.exe    binary
+*.fbx    binary
+*.gif    binary
+*.hdr    binary
+*.jpg    binary
+*.mid    binary
+*.ogg    binary
+*.png    binary
+*.psd    binary
+*.tga    binary
+*.tif    binary
+*.unity  binary
+*.prefab binary

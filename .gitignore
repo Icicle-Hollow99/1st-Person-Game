@@ -24,3 +24,11 @@ Temp/
 *.VC.db
 *.pidb.meta
 *.unitypackage
+Assembly-CSharp-Editor.csproj
+Assembly-CSharp.csproj
+First Game.sln
+My project (1).sln
+Packages/manifest.json
+Packages/packages-lock.json
+
+
