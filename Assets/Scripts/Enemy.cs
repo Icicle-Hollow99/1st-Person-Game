@@ -27,41 +27,15 @@ public class EnemyBehavior : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        PlayerMovement playerMovement = collision.gameObject.GetComponent<PlayerMovement>();
+        if (playerMovement != null)
         {
-            Debug.Log("Enemy hit the player!"); // Should appear in console
-            PlayerMovement playerMovement = collision.gameObject.GetComponent<PlayerMovement>();
-            if (playerMovement != null)
+            playerMovement.TakeDamage(damage);
+            hitCount++;
+            if (hitCount >= maxHits)
             {
-                Debug.Log("Player should take damage now!");
-                playerMovement.TakeDamage(damage);
+                Destroy(gameObject); // Destroy the enemy after max hits
             }
-        }
-    }
-
-    // This method will be called when the katana or gun hits the enemy
-    public void TakeHit()
-    {
-        hitCount++;
-
-        // If the enemy has been hit the max number of times, destroy the enemy
-        if (hitCount >= maxHits)
-        {
-            Debug.Log("Enemy has been defeated!");
-            Destroy(gameObject); // Destroy the enemy GameObject
-        }
-    }
-
-    // Method to handle taking damage from the gun
-    public void TakeDamage(float damage)
-    {
-        hitCount++;
-
-        // If the enemy has been hit the max number of times, destroy the enemy
-        if (hitCount >= maxHits)
-        {
-            Debug.Log("Enemy has been defeated!");
-            Destroy(gameObject); // Destroy the enemy GameObject
         }
     }
 }
