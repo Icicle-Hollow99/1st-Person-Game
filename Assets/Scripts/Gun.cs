@@ -6,14 +6,14 @@ public class GunScript : MonoBehaviour
     public float damage = 50f;
     public float range = 100f;
     public Camera playerCamera;
-    public GameObject bulletPrefab; // Reference to the Bullet Prefab
-    public Transform bulletSpawnPoint; // Where the bullet will spawn
+    public GameObject bulletPrefab;
+    public Transform bulletSpawnPoint;
 
     private float nextTimeToFire = 0f;
 
     void Update()
     {
-        if (gameObject.activeInHierarchy && Input.GetButtonDown("Fire1") && Time.time >= nextTimeToFire)
+        if (gameObject.activeInHierarchy && Input.GetButton("Fire1") && Time.time >= nextTimeToFire)
         {
             nextTimeToFire = Time.time + 1f / fireRate;
             Shoot();
@@ -22,7 +22,12 @@ public class GunScript : MonoBehaviour
 
     void Shoot()
     {
-        // Instantiate and fire the bullet
+        if (bulletPrefab == null)
+        {
+            Debug.LogError("Bullet prefab is not assigned!");
+            return;
+        }
+
         GameObject bullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
         BulletScript bulletScript = bullet.GetComponent<BulletScript>();
         if (bulletScript != null)
@@ -30,7 +35,6 @@ public class GunScript : MonoBehaviour
             bulletScript.speed = 20f;
         }
 
-        // Perform a raycast from the center of the camera
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out hit, range))
         {
