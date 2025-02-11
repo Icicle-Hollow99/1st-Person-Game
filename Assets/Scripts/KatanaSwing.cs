@@ -29,49 +29,35 @@ public class KatanaSwing : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && !isSwinging) // When left-click is pressed
+        if (Input.GetMouseButtonDown(0) && !isSwinging) // Left mouse button to swing
         {
-            StartCoroutine(SwingKatana());
+            StartCoroutine(Swing());
         }
     }
 
-    private IEnumerator SwingKatana()
+    IEnumerator Swing()
     {
         isSwinging = true;
-
         float elapsedTime = 0f;
-        float duration = 1f / swingSpeed;
 
-        Quaternion startRotation = swingForward ? initialRotation : targetRotation;
-        Quaternion endRotation = swingForward ? targetRotation : initialRotation;
-
-        // Swing to target position and rotation
-        while (elapsedTime < duration)
+        while (elapsedTime < 1f / swingSpeed)
         {
-            float t = elapsedTime / duration;
-            transform.localRotation = Quaternion.Lerp(startRotation, endRotation, t);
             elapsedTime += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsedTime * swingSpeed);
+
+            if (swingForward)
+            {
+                transform.localRotation = Quaternion.Slerp(initialRotation, targetRotation, t);
+            }
+            else
+            {
+                transform.localRotation = Quaternion.Slerp(targetRotation, initialRotation, t);
+            }
+
             yield return null;
         }
-        transform.localRotation = endRotation; // Ensure exact rotation
 
-        swingForward = !swingForward; // Toggle swing direction
+        swingForward = !swingForward;
         isSwinging = false;
-    }
-
-    // Detect when the katana collider hits another collider (trigger)
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Enemy"))
-        {
-            Debug.Log("Katana hit an enemy!"); // Debug log to confirm hit
-
-            EnemyBehavior enemy = other.GetComponent<EnemyBehavior>();
-            if (enemy != null)
-            {
-                enemy.TakeHit(); // Call the TakeHit method to damage the enemy
-                Debug.Log("Enemy has been hit!");
-            }
-        }
     }
 }

@@ -6,7 +6,7 @@ public class PlayerMovement : MonoBehaviour
 {
     public float speed = 5f;
     public float sprintSpeed = 8f;
-    public float jumpForce = 5f;
+    public float jumpForce = 10f;
     private bool isGrounded;
     private Rigidbody rb;
 
@@ -33,13 +33,14 @@ public class PlayerMovement : MonoBehaviour
         playerCamera = Camera.main;
         Cursor.SetCursor(dotCursor, Vector2.zero, CursorMode.Auto);
 
-        weaponUIManager = Object.FindFirstObjectByType<WeaponUIManager>();
+        weaponUIManager = FindObjectOfType<WeaponUIManager>();
         currentHealth = maxHealth;
         UpdateWeaponUI();
 
         // Lock the cursor
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        
     }
 
     void Update()
@@ -65,16 +66,17 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            rb.linearVelocity = movement * sprintSpeed;
+            rb.linearVelocity = new Vector3(movement.x * sprintSpeed, rb.linearVelocity.y, movement.z * sprintSpeed);
         }
         else
         {
-            rb.linearVelocity = movement * speed;
+            rb.linearVelocity = new Vector3(movement.x * speed, rb.linearVelocity.y, movement.z * speed);
         }
 
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
+            isGrounded = false; // Prevents double jumping
         }
 
         float mouseX = Input.GetAxis("Mouse X") * lookSpeedX;
@@ -107,20 +109,9 @@ public class PlayerMovement : MonoBehaviour
         weaponUIManager.UpdateWeaponUI(selectedWeaponIndex, weaponNames);
     }
 
-    void OnCollisionEnter(Collision collision)
+    void FixedUpdate()
     {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = true;
-        }
-    }
-
-    void OnCollisionExit(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = false;
-        }
+        isGrounded = Physics.Raycast(transform.position, Vector3.down, 1.1f);
     }
 
     public void TakeDamage(float damage)
@@ -134,7 +125,6 @@ public class PlayerMovement : MonoBehaviour
 
     void Die()
     {
-        // Handle player death (e.g., reload scene, show game over screen)
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

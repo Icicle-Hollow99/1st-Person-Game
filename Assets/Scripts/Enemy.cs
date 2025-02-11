@@ -38,4 +38,14 @@ public class EnemyBehavior : MonoBehaviour
             }
         }
     }
+
+    public void TakeDamage(float damage)
+    {
+        // Implement the logic for taking damage
+        hitCount++;
+        if (hitCount >= maxHits)
+        {
+            Destroy(gameObject); // Destroy the enemy after max hits
+        }
+    }
 }
