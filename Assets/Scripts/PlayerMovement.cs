@@ -35,12 +35,13 @@ public class PlayerMovement : MonoBehaviour
 
         weaponUIManager = FindObjectOfType<WeaponUIManager>();
         currentHealth = maxHealth;
+
+        // Initialize the weapon UI
         UpdateWeaponUI();
 
-        // Lock the cursor
+        // Lock the cursor and ensure the cursor is visible
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        
+        Cursor.visible = true;
     }
 
     void Update()
@@ -53,6 +54,13 @@ public class PlayerMovement : MonoBehaviour
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            Cursor.SetCursor(dotCursor, Vector2.zero, CursorMode.Auto); // Ensure cursor is visible
+        }
+        else if (Input.GetMouseButtonDown(0)) // Lock the cursor when the left mouse button is clicked
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = true; // Ensure the cursor is visible
+            Cursor.SetCursor(dotCursor, Vector2.zero, CursorMode.Auto); // Ensure cursor is visible
         }
     }
 
